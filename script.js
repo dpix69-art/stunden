@@ -1,53 +1,82 @@
-// ВСТАВЬ сюда URL своего веб-приложения Apps Script:
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyrgynAxOGdKxGnQl0YwDp4wn4c8lIt_rTte1JVvSkFqMPm0IVRgjDxmYPVOdBuzsPH/exec";
+// ==== НАСТРОЙКИ ====
 
-// И тот же самый секрет, что и в Apps Script:
-const TOKEN = "1OQWK7qQKxJt5yM3Uabx44HPyMplnNqCzZ9Rq";
+// URL твоего Apps Script веб-приложения (должен заканчиваться на /exec)
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyrgynAxOGdKxGnQl0YwDp4wn4c8lIt_rTte1JVvSkFqMPm0IVRgjDxmYPVOdBuzsPH/exec"; // вставь свой полный URL
 
+// Тот же секретный токен, что и в Apps Script (const TOKEN = '...';)
+const TOKEN = "1OQWK7qQKxJt5yM3Uabx44HPyMplnNqCzZ9Rq"; // замени на тот, что в Code.gs
+
+
+// ==== РАБОЧИЙ КОД ====
+
+// Находим элементы на странице
 const statusEl = document.getElementById("status");
 const shiftSelect = document.getElementById("shift-type");
 const startBtn = document.getElementById("start-btn");
 const endBtn = document.getElementById("end-btn");
 
+/**
+ * Обновление строки статуса под кнопками
+ */
 function setStatus(text, isError = false) {
-  statusEl.textContent = text;
+  if (!statusEl) return;
+  statusEl.textContent = text || "";
   statusEl.style.color = isError ? "#fca5a5" : "#a3a3a3";
 }
 
+/**
+ * Отправка события (начало/конец смены) в Apps Script
+ * @param {"start"|"end"} type
+ */
 async function sendEvent(type) {
-  const shiftType = shiftSelect.value;
-  const ts = new Date().toISOString();
+  if (!shiftSelect) {
+    console.error("Нет select#shift-type в разметке");
+    setStatus("Ошибка: не найден селектор смены.", true);
+    return;
+  }
+
+  const shiftType = shiftSelect.value;   // 'morning' или 'evening'
+  const ts = new Date().toISOString();  // текущее время в ISO
 
   setStatus("Отправляю...");
 
   try {
-    const res = await fetch(SCRIPT_URL, {
+    // ВАЖНО:
+    // - mode: "no-cors" → браузер не будет делать preflight OPTIONS
+    // - без headers → Content-Type не указываем, чтобы не усложнять запрос
+    await fetch(SCRIPT_URL, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
+      mode: "no-cors",
       body: JSON.stringify({
         token: TOKEN,
-        ts,
-        type,      // 'start' | 'end'
-        shiftType  // 'morning' | 'evening'
+        ts,         // отметка времени
+        type,       // 'start' или 'end'
+        shiftType   // 'morning' или 'evening'
       })
     });
 
-    const data = await res.json().catch(() => ({}));
+    const label = type === "start" ? "начало" : "конец";
+    const shiftLabel = shiftType === "morning" ? "утренняя" : "вечерняя";
+    setStatus(`Запрос отправлен: ${label} (${shiftLabel}). Проверь таблицу.`);
 
-    if (data.status === "ok") {
-      const label = type === "start" ? "начало" : "конец";
-      setStatus(`Записано: ${label} смены (${shiftType})`);
-    } else {
-      setStatus("Ошибка при записи. Попробуй ещё раз.", true);
-      console.error("Error response:", data);
-    }
   } catch (err) {
-    setStatus("Не удалось связаться с Google. Проверь интернет.", true);
-    console.error(err);
+    console.error("Ошибка сети:", err);
+    setStatus("Не удалось связаться с Google. Проверь SCRIPT_URL.", true);
   }
 }
 
-startBtn.addEventListener("click", () => sendEvent("start"));
-endBtn.addEventListener("click", () => sendEvent("end"));
+// Вешаем обработчики на кнопки
+if (startBtn) {
+  startBtn.addEventListener("click", () => sendEvent("start"));
+} else {
+  console.error("Нет кнопки #start-btn в разметке");
+}
+
+if (endBtn) {
+  endBtn.addEventListener("click", () => sendEvent("end"));
+} else {
+  console.error("Нет кнопки #end-btn в разметке");
+}
+
+// На старте
+setStatus("Готово. Выбери смену и нажми кнопку.");
