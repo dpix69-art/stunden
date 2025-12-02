@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <title>Учёт смен</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="icon" type="image/svg+xml"
+        href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='80'>⏱️</text></svg>">
+</head>
+<body>
+  <main class="app">
+    <h1>Учёт смен</h1>
+    <p class="hint">
+      Выбери смену, нажимай «Начало смены» и «Конец смены».
+      Данные отправятся в Google Таблицу.
+    </p>
+
+    <section class="shift-section">
+      <label class="shift-label">
+        Смена:
+        <select id="shift-type">
+          <option value="morning">Утренняя</option>
+          <option value="evening">Вечерняя</option>
+        </select>
+      </label>
+    </section>
+
+    <section class="controls">
+      <button id="start-btn" class="primary-btn">Начало смены</button>
+      <button id="end-btn" class="secondary-btn">Конец смены</button>
+    </section>
+
+    <p id="status" class="status"></p>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>
