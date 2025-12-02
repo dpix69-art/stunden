@@ -1,8 +1,8 @@
 // ВСТАВЬ сюда URL своего веб-приложения Apps Script:
-const SCRIPT_URL = "https://script.google.com/macros/s/XYZ123/exec";
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyrgynAxOGdKxGnQl0YwDp4wn4c8lIt_rTte1JVvSkFqMPm0IVRgjDxmYPVOdBuzsPH/exec";
 
 // И тот же самый секрет, что и в Apps Script:
-const TOKEN = "PUT_YOUR_SECRET_HERE";
+const TOKEN = "1OQWK7qQKxJt5yM3Uabx44HPyMplnNqCzZ9Rq";
 
 const statusEl = document.getElementById("status");
 const shiftSelect = document.getElementById("shift-type");
