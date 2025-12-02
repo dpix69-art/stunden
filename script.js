@@ -1,7 +1,7 @@
 // ==== НАСТРОЙКИ ====
 
 // URL твоего Apps Script веб-приложения (должен заканчиваться на /exec)
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyrgynAxOGdKxGnQl0YwDp4wn4c8lIt_rTte1JVvSkFqMPm0IVRgjDxmYPVOdBuzsPH/exec"; // вставь свой полный URL
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxiXjWQeZy4qHQp8xcmLFwz2rYAUZ5IEOapKWkb3JdN2_KMAwTiiOcs1ibAc0MM2Pdq/exec"; // вставь свой полный URL
 
 // Тот же секретный токен, что и в Apps Script (const TOKEN = '...';)
 const TOKEN = "1OQWK7qQKxJt5yM3Uabx44HPyMplnNqCzZ9Rq"; // замени на тот, что в Code.gs
