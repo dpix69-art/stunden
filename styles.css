@@ -60,9 +60,10 @@ body {
   position: relative;
 }
 
+/* ВАЖНО: здесь фикс */
 .screen {
   flex: 1;
-  display: none;
+  display: flex; /* экран по умолчанию виден */
 }
 
 .screen-body {
