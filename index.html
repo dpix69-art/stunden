@@ -1,39 +1,249 @@
-<!DOCTYPE html>
-<html lang="ru">
+<!doctype html>
+<html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>Учёт смен</title>
+  <meta charset="utf-8" />
+  <title>Shift Recorder</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <link rel="stylesheet" href="style.css" />
-  <link rel="icon" type="image/svg+xml"
-        href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='80'>⏱️</text></svg>">
+  <meta name="theme-color" content="#0b0c10" />
+  <link rel="manifest" href="manifest.json" />
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="icon" type="image/svg+xml" href="icons/icon.svg" />
 </head>
 <body>
-  <main class="app">
-    <h1>Учёт смен</h1>
-    <p class="hint">
-      Выбери смену, нажимай «Начало смены» и «Конец смены».
-      Данные отправятся в Google Таблицу.
-    </p>
+  <div class="app-root">
+    <header class="app-header">
+      <div class="status-indicator" id="status-indicator">
+        <span class="status-dot" id="status-dot"></span>
+        <span class="status-text" id="status-text">Offline</span>
+      </div>
+      <button type="button" class="history-link" id="history-button">History</button>
+    </header>
 
-    <section class="shift-section">
-      <label class="shift-label">
-        Смена:
-        <select id="shift-type">
-          <option value="morning">Утренняя</option>
-          <option value="evening">Вечерняя</option>
-        </select>
-      </label>
-    </section>
+    <main class="app-main">
+      <!-- IDLE -->
+      <section id="screen-idle" class="screen">
+        <div class="screen-body center">
+          <h1 class="app-title">Shift Recorder</h1>
+          <p class="app-subtitle">
+            One tap to start. One tap to end.
+          </p>
+          <button type="button" id="start-button" class="btn btn-primary btn-large">
+            Start shift
+          </button>
+        </div>
+      </section>
 
-    <section class="controls">
-      <button id="start-btn" class="primary-btn">Начало смены</button>
-      <button id="end-btn" class="secondary-btn">Конец смены</button>
-    </section>
+      <!-- START_CONFIRM -->
+      <section id="screen-start-confirm" class="screen hidden">
+        <div class="screen-body">
+          <h2 class="screen-title">New shift</h2>
 
-    <p id="status" class="status"></p>
-  </main>
+          <div class="info-block">
+            <div class="info-row">
+              <span class="info-label">Now</span>
+              <span class="info-value" id="confirm-time">07:00</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">Date</span>
+              <span class="info-value" id="confirm-date">01.01.2025</span>
+            </div>
+            <div class="info-row">
+              <label for="confirm-division" class="info-label">Division</label>
+              <select id="confirm-division" class="select">
+                <option value="480003">480003</option>
+                <option value="480001">480001</option>
+              </select>
+            </div>
+          </div>
 
-  <script src="script.js"></script>
+          <div id="template-selector" class="template-selector hidden">
+            <p class="template-label">Planned shift</p>
+            <div class="template-cards">
+              <button
+                type="button"
+                class="template-card"
+                data-template="480003_7_12"
+                id="template-7-12"
+              >
+                <div class="template-title">7:00–12:00</div>
+                <div class="template-sub">5 h · no break</div>
+              </button>
+              <button
+                type="button"
+                class="template-card"
+                data-template="480003_7_16"
+                id="template-7-16"
+              >
+                <div class="template-title">7:00–16:00</div>
+                <div class="template-sub">8 h · 1 h break</div>
+              </button>
+            </div>
+          </div>
+
+          <div class="button-row">
+            <button type="button" id="confirm-start-button" class="btn btn-primary btn-large">
+              Confirm start
+            </button>
+            <button type="button" id="cancel-start-button" class="btn btn-ghost">
+              Cancel
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ACTIVE -->
+      <section id="screen-active" class="screen hidden">
+        <div class="screen-body">
+          <h2 class="screen-title">Shift running</h2>
+
+          <div class="info-block">
+            <div class="info-row">
+              <span class="info-label">Started</span>
+              <span class="info-value" id="active-start-time">07:03</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">Date</span>
+              <span class="info-value" id="active-date">02.12.2025</span>
+            </div>
+            <div class="info-row info-row-inline">
+              <span class="info-label">Division</span>
+              <span class="info-value" id="active-division">480003</span>
+              <button
+                type="button"
+                class="btn btn-inline"
+                id="active-change-division-button"
+              >
+                Change
+              </button>
+            </div>
+            <div class="info-row active-template-row hidden" id="active-template-row">
+              <span class="info-label">Template</span>
+              <span class="info-value" id="active-template">7:00–12:00</span>
+            </div>
+          </div>
+
+          <button type="button" id="end-button" class="btn btn-primary btn-large">
+            End shift
+          </button>
+        </div>
+      </section>
+
+      <!-- END_REVIEW -->
+      <section id="screen-end-review" class="screen hidden">
+        <div class="screen-body">
+          <h2 class="screen-title">Review shift</h2>
+
+          <div class="summary-card">
+            <div class="summary-row">
+              <span class="summary-label">Date</span>
+              <span class="summary-value" id="review-date"></span>
+            </div>
+            <div class="summary-row">
+              <span class="summary-label">Division</span>
+              <span class="summary-value" id="review-division"></span>
+            </div>
+            <div class="summary-row">
+              <span class="summary-label">Start</span>
+              <span class="summary-value" id="review-start"></span>
+            </div>
+            <div class="summary-row">
+              <span class="summary-label">End</span>
+              <span class="summary-value" id="review-end"></span>
+            </div>
+            <div class="summary-row">
+              <span class="summary-label">Pause</span>
+              <span class="summary-value" id="review-pause"></span>
+            </div>
+            <div class="summary-row summary-total">
+              <span class="summary-label">Total</span>
+              <span class="summary-value" id="review-total"></span>
+            </div>
+          </div>
+
+          <div class="button-row">
+            <button type="button" id="save-shift-button" class="btn btn-primary btn-large">
+              Save shift
+            </button>
+            <button type="button" id="edit-shift-button" class="btn btn-ghost">
+              Edit
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- END_EDIT -->
+      <section id="screen-end-edit" class="screen hidden">
+        <div class="screen-body">
+          <h2 class="screen-title">Edit shift</h2>
+
+          <form id="edit-form" class="edit-form" autocomplete="off">
+            <label class="field">
+              <span class="field-label">Date</span>
+              <input type="date" id="edit-date" class="field-input" required />
+            </label>
+
+            <label class="field">
+              <span class="field-label">Start time</span>
+              <input type="time" id="edit-start" class="field-input" required />
+            </label>
+
+            <label class="field">
+              <span class="field-label">End time</span>
+              <input type="time" id="edit-end" class="field-input" required />
+            </label>
+
+            <label class="field">
+              <span class="field-label">Division</span>
+              <select id="edit-division" class="field-input">
+                <option value="480003">480003</option>
+                <option value="480001">480001</option>
+              </select>
+            </label>
+
+            <div class="button-row">
+              <button type="submit" id="apply-edit-button" class="btn btn-primary btn-large">
+                Apply
+              </button>
+              <button type="button" id="cancel-edit-button" class="btn btn-ghost">
+                Cancel
+              </button>
+            </div>
+          </form>
+        </div>
+      </section>
+
+      <!-- SAVED -->
+      <section id="screen-saved" class="screen hidden">
+        <div class="screen-body center">
+          <div class="checkmark-circle">
+            <div class="checkmark-stem"></div>
+            <div class="checkmark-kick"></div>
+          </div>
+          <p class="saved-text">Shift saved</p>
+        </div>
+      </section>
+
+      <!-- HISTORY -->
+      <section id="screen-history" class="screen hidden">
+        <div class="screen-body">
+          <h2 class="screen-title">History</h2>
+          <div id="history-list" class="history-list"></div>
+          <button type="button" id="history-back-button" class="btn btn-ghost">
+            Back
+          </button>
+        </div>
+      </section>
+
+      <!-- PENDING SYNC OVERLAY -->
+      <div id="pending-sync-banner" class="pending-banner hidden">
+        Saved locally · pending sync
+      </div>
+    </main>
+  </div>
+
+  <script>
+    window.SHIFT_API_TOKEN = "1OQWK7qQKxJt5yM3Uabx44HPyMplnNqCzZ9Rq-wZ8X7e-MIS4AzWg_b6U"; 
+  </script>
+  <script src="script.js" defer></script>
 </body>
 </html>
